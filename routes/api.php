@@ -16,8 +16,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::post('/user/create/list', [Consumer::class, 'user_create_list']);
 });
 Route::post('/user/validate', [Consumer::class, 'user_Login']);
 Route::post('/user/register', [Consumer::class, 'user_register']);
+
+
