@@ -38,7 +38,8 @@ class Consumer extends Controller
     public function user_register(Request $request){
         //Validate login fields
         $field = $request->validate([
-            'name' => 'required|string|unique:users,name','password' => 'required|string'
+            'name' => 'required|string|unique:users,name',
+            'password' => 'required|string'
         ]);
 
         //Create user table
@@ -56,5 +57,8 @@ class Consumer extends Controller
             'token' => $token
         ];
         return response($response, 201);
+    }
+    public function user_create_list(){
+
     }
 }
