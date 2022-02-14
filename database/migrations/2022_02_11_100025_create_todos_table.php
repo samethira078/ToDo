@@ -18,7 +18,6 @@ return new class extends Migration
             $table->bigInteger('user_id');
             $table->string('table_name');
             $table->dateTime('table_creation');
-            $table->json('guests');
         });
     }
 
