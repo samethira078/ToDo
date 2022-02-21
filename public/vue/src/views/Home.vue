@@ -112,7 +112,6 @@
               }
           }
       },
-
       methods: {
         register_user(){
             this.$store.dispatch('register', this.details).then(response => {
