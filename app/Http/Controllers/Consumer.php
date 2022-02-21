@@ -78,10 +78,10 @@ class Consumer extends Controller
     }
 
     public function user_grab_list(){
-        return Todo::where([['user_id', '=', auth()->user()->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['tasks.*', 'todos.*', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
+        return Todo::where([['user_id', '=', auth()->user()->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['todos.table_name','tasks.table_id', 'tasks.task_name', 'todos.table_creation', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
     }
     public function user_grab_tasks(Request $request){
-        return Todo::where([['user_id', '=', auth()->user()->id], ['table_id', '=', $request->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['tasks.*', 'todos.*', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
+        return Todo::where([['user_id', '=', auth()->user()->id], ['table_id', '=', $request->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['tasks.*','todos.*', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
     }
 
 }

@@ -63,6 +63,18 @@ export default new Vuex.Store({
               })
           })
       },
+      grab_todos_tasks(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('user/grab/tasks', {
+                  id: data,
+              }).
+              then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
   },
   modules: {
   }
