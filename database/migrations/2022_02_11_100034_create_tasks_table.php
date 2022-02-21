@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('table_id');
             $table->string('task_name');
+            $table->json('items')->nullable();;
         });
     }
 
