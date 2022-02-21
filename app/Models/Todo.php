@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Todo extends Model
 {
     use HasFactory;
+    public $timestamps = false;
+    protected $fillable = [
+        'user_id',
+        'table_name',
+        'table_creation',
+    ];
 }
