@@ -95,7 +95,6 @@ export default {
                     }
                 })
                 this.todos = data;
-                console.log(data)
                 //  Error
             }).catch(response => {
                 console.log(response)
