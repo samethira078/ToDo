@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
+use App\Models\Todo;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -35,6 +38,7 @@ class Consumer extends Controller
         ];
         return response($response, 201);
     }
+
     public function user_register(Request $request){
         //Validate login fields
         $field = $request->validate([
@@ -58,7 +62,26 @@ class Consumer extends Controller
         ];
         return response($response, 201);
     }
-    public function user_create_list(){
+
+    public function user_create_list(Request $request){
+        $field = $request->validate([
+            'table_name' => 'required|string|unique:todos,table_name|unique:todos,user_id',
+        ]);
+
+        Todo::create([
+            'table_name' => $field['table_name'],
+            'user_id' => auth()->user()->id,
+            'table_creation' => Carbon::now()->format('Y-m-d H:i:s'),
+        ]);
+
 
     }
+
+    public function user_grab_list(){
+        return Todo::where([['user_id', '=', auth()->user()->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['tasks.*', 'todos.*', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
+    }
+    public function user_grab_tasks(Request $request){
+        return Todo::where([['user_id', '=', auth()->user()->id], ['table_id', '=', $request->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['tasks.*', 'todos.*', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
+    }
+
 }
