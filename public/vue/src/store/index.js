@@ -42,6 +42,27 @@ export default new Vuex.Store({
               })
           })
       },
+      create_todos_table(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('user/create/list', {
+                  table_name: data.name,
+              }).then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
+      grab_todos_list(){
+          return new Promise((resolve, reject) => {
+              axios.get('user/grab/list').
+              then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
   },
   modules: {
   }
