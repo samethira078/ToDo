@@ -59,13 +59,46 @@
                         <v-btn class="red--text" text>
                             Verwijderen
                         </v-btn>
-                        <v-btn @click="loadItems(list.id)" class="green--text" text>
+                        <v-btn @click="loadItems(list.table_id)" class="green--text" text>
                             Bekijken
                         </v-btn>
                     </v-card-actions>
                 </v-card>
             </v-col>
        </v-row>
+<!--        DIALOG SELECTED ITEMS-->
+        <v-dialog dark v-model="selected_dialog" width="1000">
+            <v-sheet elevation="6">
+                <v-tabs  background-color="teal darken-5" dark
+                    next-icon="mdi-arrow-right-bold-box-outline"
+                    prev-icon="mdi-arrow-left-bold-box-outline"
+                    show-arrows>
+                    <v-tabs-slider color="white"></v-tabs-slider>
+<!--                    TABS SELECTED ITEMS-->
+                    <v-tab v-for="list in selected" :key="list.id" :href="'#tab-'+list.id">
+                        {{list.task_name}}
+                    </v-tab>
+<!--                    ITEMS SELECTED ITEMS-->
+                    <v-tab-item class="ma-2" v-for="list in selected" :key="list.id" :value="'tab-'+list.id">
+                        <v-card>
+                            <v-row class="ma-2 text-center">
+                                <v-col cols="4">
+<!--                                    name-->
+                                </v-col>
+                                <v-col cols="4">
+<!--                                    status-->
+                                </v-col>
+                                <v-col cols="4">
+<!--                                    labels-->
+                                </v-col>
+                            </v-row>
+                            {{list.items}}
+                        </v-card>
+                        <v-spacer></v-spacer>
+                    </v-tab-item>
+                </v-tabs>
+            </v-sheet>
+        </v-dialog>
     </v-container>
     </v-app>
 </template>
@@ -77,27 +110,37 @@ export default {
         return{
             selectedItem: 1,
             todos: [],
+            selected: [],
+            selected_dialog: false,
         }
     },
     methods: {
         loadItems(id){
-            console.log(id);
+           if(this.selected_dialog === false){
+               this.selected_dialog = !this.selected_dialog;
+           }
+           this.$store.dispatch('grab_todos_tasks', id).then(response => {
+               this.selected = response;
+           })
         },
         loadData(){
+            //New request
             this.$store.dispatch('grab_todos_list').then(response => {
                 let data = [];
+                //Loop through returned data
                 response.forEach(function (item){
+                    //Search if json object iteration exists
                     let loop = data.find(element => element['table_id'] === item['table_id']);
+                    //Add item to existing iteration
                     if(loop){
                         loop.task_name.push(item.task_name);
                     } else {
+                        //Create new iteration
                         data.push({id: item['id'], table_id: item['table_id'], table_name: item['table_name'], username: item['username'], table_creation: item['table_creation'], task_name: [item['task_name']]})
                     }
                 })
                 this.todos = data;
                 //  Error
-            }).catch(response => {
-                console.log(response)
             })
         }
     },
