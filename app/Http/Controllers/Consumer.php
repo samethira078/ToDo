@@ -73,15 +73,31 @@ class Consumer extends Controller
             'user_id' => auth()->user()->id,
             'table_creation' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
-
-
     }
 
     public function user_grab_list(){
-        return Todo::where([['user_id', '=', auth()->user()->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['todos.table_name','tasks.table_id', 'tasks.task_name', 'todos.table_creation', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
+        return Todo::where([['user_id', '=', auth()->user()->id]])->leftJoin('tasks', 'tasks.table_id', '=', 'todos.id')->leftJoin('users', 'users.id', '=', 'todos.user_id')->get(['todos.table_name','tasks.table_id', 'tasks.task_name', 'todos.table_creation', 'users.name as username', 'tasks.id as id','todos.id as todo_id', 'users.id as username_id']);
     }
     public function user_grab_tasks(Request $request){
         return Todo::where([['user_id', '=', auth()->user()->id], ['table_id', '=', $request->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['tasks.*','todos.*', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
     }
 
+    public function user_add_task(Request $request){
+
+
+//        $tasks = Task::leftJoin('todos', 'todos.id', '=', 'tasks.table_id')->where([['table_id', '=', $request->id], ['user_id', '=', auth()->user()->id]])->select('tasks.id', 'todos.id as todo_id')->get();;
+//        $array = json_decode(json_encode($tasks), true);
+//        $last_task = 1;
+//        if($tasks){
+//            $array = json_decode(json_encode($tasks), true);
+//            $last_task = (end($array));
+//        }
+;
+        $new = new Task;
+        $new->table_id = $request->id;
+        $new->task_name = strval($request->list);
+        $new->items = null;
+        $new->save();
+
+    }
 }
