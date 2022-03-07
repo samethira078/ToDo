@@ -75,6 +75,20 @@ export default new Vuex.Store({
               })
           })
       },
+      add_new_task(_, data){
+          return new Promise((resolve, reject) => {
+              console.log(data);
+              axios.post('user/add/task', {
+                  id: data[0],
+                  list: data[1],
+              }).then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
+
   },
   modules: {
   }
