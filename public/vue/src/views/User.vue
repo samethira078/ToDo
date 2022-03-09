@@ -23,9 +23,7 @@
                     <v-card-title>
                        {{list.table_name}}
                         <v-spacer></v-spacer>
-                        <v-avatar tile size="50">
-                            <img src="https://cdn.vuetifyjs.com/images/john.jpg" alt="John">
-                        </v-avatar>
+
                     </v-card-title>
 
                     <v-list dense flat>
@@ -81,12 +79,12 @@
                         {{list.task_name}}
                     </v-tab>
                     <!--                    ITEMS SELECTED ITEMS-->
-                    <v-tab-item class="ma-2" v-for="(list) in selected" :key="list.id" :value="'tab-'+list.id">
-                        <v-card flat v-for="item in list.items" :key="item.id">
+                    <v-tab-item  :change="selectedItem" class="ma-2" v-for="(list) in selected"  :key="list.id" :value="'tab-'+list.id">
+                        <v-card flat v-for="(item, key) in list.items" :key="key">
                             <v-row id="properties" @click="run_Click(item.id)" class="ma-2 text--black">
                                 <v-col v-if="item.status && item.status !== 'archived'" class="green lighten-4" cols="12">
                                     <!--                                    name-->
-                                    <h4>{{item.name}}</h4>
+                                    lol
                                 </v-col>
                                 <v-col v-if="!item.status && item.status !== 'archived'" class="red lighten-4" cols="12">
                                     <!--                                    name-->
@@ -99,9 +97,10 @@
                             </v-row>
                         </v-card>
                         <v-spacer></v-spacer>
-<!--                        <v-btn text @click="add_item = !add_item"  class="mt-2 float-end" color="primary">-->
-<!--                            Nieuwe taak toevoegen.-->
-<!--                        </v-btn>-->
+
+                        <v-btn text @click="add_item = !add_item" class="mt-2 float-end" color="primary">
+                            Nieuw item toevoegen {{selectedItem}}
+                        </v-btn>
                     </v-tab-item>
                 </v-tabs>
             </v-sheet>
@@ -131,7 +130,7 @@
                             Sluiten
                         </v-btn>
                         <v-spacer></v-spacer>
-                        <v-btn @click="add_row()"
+                        <v-btn v-on:keyup.enter="add_row()" @click="add_row()"
                                color="primary"
                                text
                         >Toevoegen
@@ -150,8 +149,9 @@ export default {
     name: "User",
     data(){
         return{
-            selectedItem: 1,
+            selectedItem: '',
             todos: [],
+            selected_item: [],
             selected: [],
             selected_dialog: false,
             add_item: false,
@@ -171,7 +171,9 @@ export default {
            this.$store.dispatch('grab_todos_tasks', id).then(response => {
                response.forEach( item => item.items = JSON.parse(item.items))
                this.selected = response;
+               console.log(response);
            })
+           // console.log(this.selected);
         },
         loadData(){
             //New request
@@ -200,13 +202,15 @@ export default {
                 this.selected = index;
                 return this.add_item = !this.add_item;
             }
-            console.log(this.selected)
             if(this.$refs.add_new_task.validate()) {
                this.$store.dispatch('add_new_task', [this.selected, this.create_option]).then(() => {
                     this.add_item = false;
                     this.loadData();
                })
            }
+        },
+        add_new_item(){
+
         },
         run_Click(index){
             console.log(index)
