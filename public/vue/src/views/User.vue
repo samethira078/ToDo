@@ -214,6 +214,7 @@ export default {
         },
         run_Click(index){
             console.log(index)
+
         }
     },
     mounted() {
