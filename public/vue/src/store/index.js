@@ -88,20 +88,19 @@ export default new Vuex.Store({
               })
           })
       },
-      add_todos_item(_, data){
+      add_new_item(_, data){
           return new Promise((resolve, reject) => {
+              console.log(data);
               axios.post('user/add/item', {
                   id: data[0],
-                  name: data[1]
-              }).
-              then(response => {
+                  list: data[1],
+              }).then(response => {
                   resolve(response.data)
               }).catch(() =>{
                   reject(reject)
               })
           })
       },
-
   },
   modules: {
   }

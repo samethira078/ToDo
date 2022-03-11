@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Option;
 use App\Models\Task;
 use App\Models\Todo;
 use App\Models\User;
@@ -79,7 +80,7 @@ class Consumer extends Controller
         return Todo::where([['user_id', '=', auth()->user()->id]])->leftJoin('tasks', 'tasks.table_id', '=', 'todos.id')->leftJoin('users', 'users.id', '=', 'todos.user_id')->get(['todos.table_name','tasks.table_id', 'tasks.task_name', 'todos.table_creation', 'users.name as username', 'tasks.id as id','todos.id as todo_id', 'users.id as username_id']);
     }
     public function user_grab_tasks(Request $request){
-        return Todo::where([['user_id', '=', auth()->user()->id], ['table_id', '=', $request->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('users', 'users.id', '=', 'todos.user_id')->get(['tasks.*','todos.*', 'users.name as username', 'tasks.id as id', 'users.id as username_id']);
+        return Todo::where([['user_id', '=', auth()->user()->id], ['table_id', '=', $request->id]])->join('tasks', 'tasks.table_id', '=', 'todos.id')->join('options', 'options.task_id', '=', 'tasks.id')->get(['tasks.tasK_name', 'options.*']);
     }
 
     public function user_add_task(Request $request){
@@ -99,5 +100,17 @@ class Consumer extends Controller
         $new->items = null;
         $new->save();
 
+    }
+
+    public function user_add_item(Request $request){
+        return Option::where([['task_id', '=', $request->id]])->get();
+//        $items = $items->reject(null);
+//        $object = (object)[
+//            'id' => 5,
+//            'name' => $request->name,
+//            'status' => true,
+//            'tasks' => [],
+//            'label' => []
+//        ];
     }
 }
