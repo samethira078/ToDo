@@ -17,7 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->boolean('status');
-            $table->json('items');
+            $table->json('tasks')->nullable();
+            $table->json('label')->nullable();
             $table->bigInteger('task_id');
         });
     }
