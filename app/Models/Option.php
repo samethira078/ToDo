@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Option extends Model
 {
     use HasFactory;
+    public $timestamps = false;
+
+    protected $fillable = [
+        'id',
+        'name',
+        'status',
+        'tasks',
+        'label',
+        'task_id'
+    ];
 }
