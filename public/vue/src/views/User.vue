@@ -75,20 +75,20 @@
                          show-arrows>
                     <v-tabs-slider color="white"></v-tabs-slider>
                     <!--                    TABS SELECTED ITEMS-->
-                    <v-tab v-for="list in selected" :key="list.id" :href="'#tab-'+list.id">
-                        {{list.task_name}}
+                    <v-tab @click="active_href = list.id" v-for="list in selected" :key="list.id" :href="'#tab-'+list.id">
+                        {{list.tasK_name}}
                     </v-tab>
                     <!--                    ITEMS SELECTED ITEMS-->
                     <v-tab-item  :change="selectedItem" class="ma-2" v-for="(list) in selected"  :key="list.id" :value="'tab-'+list.id">
-                        <v-card flat v-for="(item, key) in list.items" :key="key">
+                        <v-card flat v-for="(item, key) in list.data" :key="key">
                             <v-row id="properties" @click="run_Click(item.id)" class="ma-2 text--black">
                                 <v-col v-if="item.status && item.status !== 'archived'" class="green lighten-4" cols="12">
                                     <!--                                    name-->
-                                    lol
+                                    {{item.name}}
                                 </v-col>
                                 <v-col v-if="!item.status && item.status !== 'archived'" class="red lighten-4" cols="12">
                                     <!--                                    name-->
-                                    <h4>{{item.name}}</h4>
+                                    {{item.name}}
                                 </v-col>
                                 <v-col v-if="item.status === 'archived'" class="grey lighten-2" cols="12">
                                     <!--                                    name-->
@@ -99,19 +99,53 @@
                         <v-spacer></v-spacer>
 
                         <v-btn text @click="add_item = !add_item" class="mt-2 float-end" color="primary">
-                            Nieuw item toevoegen {{selectedItem}}
+                            Nieuw item toevoegen
                         </v-btn>
+
+                        <v-dialog width="400" v-model="add_item">
+                            <v-card>
+                                <v-form ref="add_new_item">
+                                    <v-card-title>
+                                        Nieuwe item toevoegen
+                                    </v-card-title>
+                                    <v-card-text>
+                                        <v-text-field
+                                            v-model="create_option"
+                                            :rules="addOptionInput"
+                                            label="Name"
+                                            required
+                                        ></v-text-field>
+                                    </v-card-text>
+                                    <v-card-actions>
+                                        <v-btn
+                                            color="red"
+                                            text
+                                            @click="add_item = false"
+                                        >
+                                            Sluiten
+                                        </v-btn>
+                                        <v-spacer></v-spacer>
+                                        <v-btn @click="add_new_item(list.id)"
+                                               color="primary"
+                                               text
+                                        >Toevoegen
+                                        </v-btn>
+                                    </v-card-actions>
+                                </v-form>
+                            </v-card>
+                        </v-dialog>
+
                     </v-tab-item>
                 </v-tabs>
             </v-sheet>
         </v-dialog>
 
 
-        <v-dialog width="400" v-model="add_item">
+        <v-dialog width="400" v-model="add_task">
             <v-card>
                 <v-form ref="add_new_task">
                     <v-card-title>
-                        Nieuwe item toevoegen
+                        Nieuwe taak toevoegen
                     </v-card-title>
                     <v-card-text>
                         <v-text-field
@@ -139,7 +173,6 @@
                 </v-form>
             </v-card>
         </v-dialog>
-
     </v-container>
     </v-app>
 </template>
@@ -152,8 +185,10 @@ export default {
             selectedItem: '',
             todos: [],
             selected_item: [],
+            active_href: '',
             selected: [],
             selected_dialog: false,
+            add_task: false,
             add_item: false,
             create_option: '',
             addOptionInput: [
@@ -169,11 +204,19 @@ export default {
                this.selected_dialog = !this.selected_dialog;
            }
            this.$store.dispatch('grab_todos_tasks', id).then(response => {
-               response.forEach( item => item.items = JSON.parse(item.items))
-               this.selected = response;
-               console.log(response);
+               let data = [];
+
+               response.map(function (item){
+                   let find = data.find(element => element['task_id'] === element['task_id']);
+                   console.log(find);
+                   if(find){
+                        find.data.push({id: item['id'], name: item['name'], status: item['status'], tasks:item['tasks'], label:item['label']});
+                   } else {
+                       data.push({id: item['task_id'], tasK_name: item['tasK_name'], data: [{id: item['id'], name: item['name'], status: item['status'], tasks:item['tasks'], label:item['label']}]})
+                   }
+               });
+               this.selected = data;
            })
-           // console.log(this.selected);
         },
         loadData(){
             //New request
@@ -181,7 +224,7 @@ export default {
                 console.log(response);
                 let data = [];
                 //Loop through returned data
-                response.forEach(function (item){
+                response.map(function (item){
                     //Search if json object iteration exists
                     let loop = data.find(element => element['table_name'] === item['table_name']);
                     //Add item to existing iteration
@@ -200,17 +243,22 @@ export default {
         add_row(index, action){
             if(action){
                 this.selected = index;
-                return this.add_item = !this.add_item;
+                return this.add_task = !this.add_task;
             }
             if(this.$refs.add_new_task.validate()) {
                this.$store.dispatch('add_new_task', [this.selected, this.create_option]).then(() => {
-                    this.add_item = false;
-                    this.loadData();
+                    this.add_task = false;
+                    this.loadItems();
                })
            }
         },
-        add_new_item(){
-
+        add_new_item(index){
+            if(this.$refs.add_new_item[0].validate()) {
+                this.$store.dispatch('add_new_item', [index, this.create_option]).then(() => {
+                    this.add_item = false;
+                    this.loadData();
+                })
+            }
         },
         run_Click(index){
             console.log(index)
