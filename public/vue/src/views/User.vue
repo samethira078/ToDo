@@ -69,28 +69,28 @@
 <!--        DIALOG SELECTED ITEMS-->
         <v-dialog dark v-model="selected_dialog" width="1000">
             <v-sheet elevation="6">
-                <v-tabs  background-color="teal darken-5" dark
+                <v-tabs v-model="active_tab" background-color="teal darken-5" dark
                          next-icon="mdi-arrow-right-bold-box-outline"
                          prev-icon="mdi-arrow-left-bold-box-outline"
                          show-arrows>
                     <v-tabs-slider color="white"></v-tabs-slider>
                     <!--                    TABS SELECTED ITEMS-->
-                    <v-tab @click="active_href = list.id" v-for="list in selected" :key="list.id" :href="'#tab-'+list.id">
-                        {{list.tasK_name}}
+                    <v-tab v-for="list in selected" :key="list.id" :href="'#tab-'+list.id">
+                        {{list.task_name}}
                     </v-tab>
                     <!--                    ITEMS SELECTED ITEMS-->
-                    <v-tab-item  :change="selectedItem" class="ma-2" v-for="(list) in selected"  :key="list.id" :value="'tab-'+list.id">
-                        <v-card flat v-for="(item, key) in list.data" :key="key">
+                    <v-tab-item :change="selectedItem" class="ma-2" v-for="(list) in selected"  :key="list.id" :value="'tab-'+list.id">
+                        <v-card flat v-for="(item, key) in list.options" :key="key">
                             <v-row id="properties" @click="run_Click(item.id)" class="ma-2 text--black">
-                                <v-col v-if="item.status && item.status !== 'archived'" class="green lighten-4" cols="12">
+                                <v-col v-if="item.status && item.status !== 2" class="green lighten-4" cols="12">
                                     <!--                                    name-->
                                     {{item.name}}
                                 </v-col>
-                                <v-col v-if="!item.status && item.status !== 'archived'" class="red lighten-4" cols="12">
+                                <v-col v-if="!item.status && item.status !== 2" class="red lighten-4" cols="12">
                                     <!--                                    name-->
                                     {{item.name}}
                                 </v-col>
-                                <v-col v-if="item.status === 'archived'" class="grey lighten-2" cols="12">
+                                <v-col v-if="item.status === 2" class="grey lighten-2" cols="12">
                                     <!--                                    name-->
                                     <h4 class="text-decoration-line-through font-weight-light">{{item.name}}</h4>
                                 </v-col>
@@ -99,14 +99,14 @@
                         <v-spacer></v-spacer>
 
                         <v-btn text @click="add_item = !add_item" class="mt-2 float-end" color="primary">
-                            Nieuw item toevoegen
+                            Nieuw kaart toevoegen {{active_tab}}
                         </v-btn>
 
                         <v-dialog width="400" v-model="add_item">
                             <v-card>
                                 <v-form ref="add_new_item">
                                     <v-card-title>
-                                        Nieuwe item toevoegen
+                                        Nieuwe kaart toevoegen
                                     </v-card-title>
                                     <v-card-text>
                                         <v-text-field
@@ -134,13 +134,10 @@
                                 </v-form>
                             </v-card>
                         </v-dialog>
-
                     </v-tab-item>
                 </v-tabs>
             </v-sheet>
         </v-dialog>
-
-
         <v-dialog width="400" v-model="add_task">
             <v-card>
                 <v-form ref="add_new_task">
@@ -173,6 +170,174 @@
                 </v-form>
             </v-card>
         </v-dialog>
+
+
+
+        <v-dialog width="450" v-model="edit_task">
+            <v-card v-if="selected_item[0]">
+                <v-card-title v-if="!change_title">
+                    {{selected_item[0].name}}
+                    <v-btn @click="change_title = !change_title" text class="ml-1">
+                        <v-icon>mdi-pencil</v-icon>
+                    </v-btn>
+                </v-card-title>
+                <v-card-title v-else>
+                    <v-text-field
+                        v-model="selected_item[0].name"
+                        label="Titel"
+                        :value="selected_item[0].name"
+                        required
+                    ></v-text-field>
+                    <v-btn @click="change_title = !change_title" text class="ml-1">
+                        <v-icon>mdi-check-bold</v-icon>
+                    </v-btn>
+                </v-card-title>
+                <v-card-text>
+                    <v-row>
+                        <v-col cols="6">
+                            <v-select
+                                v-model="status_option.status"
+                                :items="status_option"
+                                label="Status"
+                            ></v-select>
+                            {{status_option.status}}
+                        </v-col>
+                        <v-col cols="6">
+                            <v-btn color="success" class="ml-1 d-block">Opslaan
+                            </v-btn>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-btn color="primary" @click="add_new_label = !add_new_label" text class="ml-1 d-block">Label toevoegen<v-icon>mdi-plus</v-icon>
+                        </v-btn>
+                        <v-col cols="12">
+                            <div>
+                                <v-chip v-for="(label, index) in selected_item[0].label" :key="index"
+                                        @click="remove_label(index)"
+                                        class="ma-2"
+                                    :color="label.color"
+                                >
+                                    {{label.name}}
+                                </v-chip>
+                            </div>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-btn color="warning" @click="add_new_task = !add_new_task" text class="ml-1 d-block">Taak toevoegen<v-icon>mdi-plus</v-icon>
+                        </v-btn>
+                        <v-col cols="12" class=" lighten-3" >
+                            <div v-for="(label, index) in selected_item[0].tasks" :key="index">
+                                <v-checkbox class="d-inline-block" @click="toggle_checkbox(index)"
+                                            :v-model="label.active"
+                                            :input-value="label.active"
+                                ></v-checkbox>
+                                <v-btn @click="remove_checkbox(index)" text class="d-inline-block text-capitalize label_selected mb-2">{{label.name}}</v-btn>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog width="300" v-model="add_new_task">
+            <v-card>
+                <v-card-title>
+                    Nieuwe taak toevoegen
+                </v-card-title>
+                <v-card-text>
+                    <v-form
+                        ref="new_item"
+                        lazy-validation
+                    >
+                        <v-text-field
+                            :rules="addOptionInput"
+                            v-model="add_new_task_item_to_field"
+                            label="Omschrijving"
+                            required
+                        ></v-text-field>
+                    </v-form>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn @click="add_to_task_field()"
+                           color="primary"
+                           text
+                    >Toevoegen
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog width="300" v-model="add_new_label">
+            <v-card>
+                <v-card-title>
+                    Nieuwe label toevoegen
+                </v-card-title>
+                <v-card-text>
+                    <v-form
+                        ref="new_label"
+                        lazy-validation
+                    >
+                        <v-text-field
+                            :rules="addOptionInput"
+                            v-model="add_new_task_item_to_field"
+                            label="Omschrijving"
+                            required
+                        ></v-text-field>
+                        <v-select
+                            :items="label_option"
+                            :rules="labelInput"
+                            label="Label"
+                            v-model="label_selected"
+                            required
+                        ></v-select>
+                    </v-form>
+                    <div class="text-center">
+                        <v-chip
+                            class="ma-2"
+                            color="primary"
+                        >
+                            Primary
+                        </v-chip>
+
+                        <v-chip
+                            class="ma-2"
+                            color="secondary"
+                        >
+                            Secondary
+                        </v-chip>
+
+                        <v-chip
+                            class="ma-2"
+                            color="error"
+                            text-color="white"
+                        >
+                            Error
+                        </v-chip>
+
+                        <v-chip
+                            class="ma-2"
+                            color="success"
+                            text-color="white"
+                        >
+                            Success
+                        </v-chip>
+                        <v-chip
+                            class="ma-2"
+                            color="info"
+                            text-color="white"
+                        >
+                            Info
+                        </v-chip>
+                    </div>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn @click="add_new_label_to_field()"
+                           color="primary"
+                           text
+                    >Toevoegen
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
     </v-app>
 </template>
@@ -184,17 +349,29 @@ export default {
         return{
             selectedItem: '',
             todos: [],
+            search: '',
             selected_item: [],
-            active_href: '',
+            active_tab: 1,
+            change_title: false,
+            label_selected: '',
             selected: [],
+            status_option: ['Actief', 'Gesloten', 'Gearchiveerd'],
+            edit_task: false,
+            add_new_task: false,
+            add_new_label: false,
+            label_option: ['primary', 'secondary', 'error', 'success', 'info'],
             selected_dialog: false,
+            add_new_task_item_to_field: '',
             add_task: false,
             add_item: false,
             create_option: '',
+            labelInput: [
+                v => !!v || 'Veld is leeg'
+            ],
             addOptionInput: [
                 v => !!v || 'Veld is leeg',
                 v => v && v.length >= 3 || 'Minimaal 3 letters of cijfers',
-                v => /^[a-zA-Z0-9]+$/.test(v)||'Alleen letters of cijfers toegestaan',
+                v => /^[a-zA-Z0-9 _]+$/.test(v)||'Alleen letters of cijfers toegestaan',
             ],
         }
     },
@@ -204,18 +381,7 @@ export default {
                this.selected_dialog = !this.selected_dialog;
            }
            this.$store.dispatch('grab_todos_tasks', id).then(response => {
-               let data = [];
-
-               response.map(function (item){
-                   let find = data.find(element => element['task_id'] === element['task_id']);
-                   console.log(find);
-                   if(find){
-                        find.data.push({id: item['id'], name: item['name'], status: item['status'], tasks:item['tasks'], label:item['label']});
-                   } else {
-                       data.push({id: item['task_id'], tasK_name: item['tasK_name'], data: [{id: item['id'], name: item['name'], status: item['status'], tasks:item['tasks'], label:item['label']}]})
-                   }
-               });
-               this.selected = data;
+               this.selected = response;
            })
         },
         loadData(){
@@ -236,7 +402,6 @@ export default {
                     }
                 })
                 this.todos = data;
-                console.log(data);
                 //  Error
             })
         },
@@ -248,7 +413,7 @@ export default {
             if(this.$refs.add_new_task.validate()) {
                this.$store.dispatch('add_new_task', [this.selected, this.create_option]).then(() => {
                     this.add_task = false;
-                    this.loadItems();
+                    this.loadData();
                })
            }
         },
@@ -256,17 +421,58 @@ export default {
             if(this.$refs.add_new_item[0].validate()) {
                 this.$store.dispatch('add_new_item', [index, this.create_option]).then(() => {
                     this.add_item = false;
-                    this.loadData();
+                    this.loadItems(index);
                 })
             }
         },
         run_Click(index){
-            console.log(index)
+            this.edit_task = true;
+            this.$store.dispatch('grab_single_item', index).then(response => {
+                this.selected_item = response;
+            })
+        },
+        toggle_checkbox(index){
+            this.selected_item[0].tasks[index].active = !this.selected_item[0].tasks[index].active;
+        },
+        add_new_label_to_field(){
+            if(this.$refs.new_label.validate()) {
+                if(!this.selected_item[0].label){
+                    this.selected_item[0].label = [];
+                }
+                this.selected_item[0].label.push({name: this.add_new_task_item_to_field, color: this.label_selected});
+                this.add_new_label =  false;
+                this.add_new_task_item_to_field = '';
+            }
+            console.log(this.selected_item[0].label);
+        },
+        add_to_task_field(){
+            if(this.$refs.new_item.validate()){
+                if(!this.selected_item[0].tasks){
+                    this.selected_item[0].tasks = [];
+                }
+                this.selected_item[0].tasks.push({name: this.add_new_task_item_to_field, active: true});
+                this.add_new_task = false;
+                this.add_new_task_item_to_field = '';
+                console.log(this.selected_item[0].tasks)
+            }
+        },
+        remove_checkbox(index){
+            this.selected_item[0].tasks.splice(index,1);
+        },
+        remove_label(index){
+            this.selected_item[0].label.splice(index,1);
 
         }
     },
     mounted() {
         this.loadData();
+    },
+    watch: {
+        selected_item: {
+            handler: function (val, oldVal) {
+                console.log(oldVal, val);
+            },
+}
     }
 }
 </script>
@@ -275,4 +481,8 @@ export default {
 #properties:hover{
     cursor: pointer;
 }
+.label_selected:hover{
+    color: red;
+}
+
 </style>
