@@ -101,6 +101,17 @@ export default new Vuex.Store({
               })
           })
       },
+      grab_single_item(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('user/grab/single/item', {
+                  id: data,
+              }).then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
   },
   modules: {
   }
