@@ -15,4 +15,7 @@ class Task extends Model
         'task_name',
         'items',
     ];
+    public function options(){
+        return $this->hasMany(Option::class);
+    }
 }
