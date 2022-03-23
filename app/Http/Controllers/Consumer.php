@@ -117,4 +117,10 @@ class Consumer extends Controller
                 'label' => $data['label']
             ]);
     }
+    public function user_remove_options(Request $request){
+        Option::where('id', $request->id)->delete();
+    }
+    public function user_remove_list(Request $request){
+        Todo::where('id', $request->id)->delete();
+    }
 }

@@ -8,7 +8,7 @@
                     <h2 class="font-weight-black white--text">To-do-List</h2>
                  </v-app-bar-title>
                  <v-spacer></v-spacer>
-                 <v-btn @click="create_table" class="mr-4" depressed>
+                 <v-btn @click="create_table_dialog = !create_table_dialog" class="mr-4" depressed>
                      creëren
                  </v-btn>
                  <v-btn depressed>
@@ -35,7 +35,7 @@
                                     <v-icon color="blue-grey darken-5">mdi-file-tree</v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-content>
-                                    <v-list-item-title>Taken: <span v-for="item in list.task_name" :key="item">| {{item}}</span></v-list-item-title>
+                                    <v-list-item-title>Taken: <span v-for="(item,index) in list.task_name" :key="index">| {{item}}</span></v-list-item-title>
                                 </v-list-item-content>
                             </v-list-item>
                         </v-list-item-group>
@@ -53,7 +53,7 @@
                     </v-list>
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn class="red--text" text>
+                        <v-btn @click="remove_field(list.id)" class="red--text" text>
                             Verwijderen
                         </v-btn>
                         <v-btn text @click="add_row(list.id, 'open_menu')" color="primary">
@@ -96,6 +96,7 @@
                                     <td>{{ item.status }}</td>
                                 </tr>
                             </template>
+
                         </v-data-table>
                         <v-spacer></v-spacer>
 
@@ -172,7 +173,38 @@
             </v-card>
         </v-dialog>
 
-
+        <v-dialog width="400" v-model="add_task">
+            <v-card>
+                <v-form ref="add_new_task">
+                    <v-card-title>
+                        Nieuwe taak toevoegen
+                    </v-card-title>
+                    <v-card-text>
+                        <v-text-field
+                            v-model="create_option"
+                            :rules="addOptionInput"
+                            label="Name"
+                            required
+                        ></v-text-field>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-btn
+                            color="red"
+                            text
+                            @click="add_item = false"
+                        >
+                            Sluiten
+                        </v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn v-on:keyup.enter="add_row()" @click="add_row()"
+                               color="primary"
+                               text
+                        >Toevoegen
+                        </v-btn>
+                    </v-card-actions>
+                </v-form>
+            </v-card>
+        </v-dialog>
 
         <v-dialog width="450" v-model="edit_task">
             <v-card v-if="selected_item[0]">
@@ -205,6 +237,7 @@
                         </v-col>
                         <v-col cols="6">
                             <v-btn @click="updateOption()" color="success" class="ml-1 d-block">Opslaan</v-btn>
+                            <v-btn @click="removeOption(selected_item[0].id)" color="error" class="mt-1 ml-1 d-block">Verwijderen</v-btn>
                         </v-col>
                     </v-row>
                     <v-row>
@@ -258,7 +291,7 @@
                     </v-form>
                 </v-card-text>
                 <v-card-actions>
-                    <v-btn @click="add_to_task_field()"
+                    <v-btn @click="add_empty_task_field()"
                            color="primary"
                            text
                     >Toevoegen
@@ -390,6 +423,7 @@ export default {
                 { text: 'Name', value: 'name' },
                 { text: 'Status', value: 'status' },
             ],
+
             create_table_dialog: false,
             status_option: ['Actief', 'Gesloten', 'Gearchiveerd'],
             edit_task: false,
@@ -419,6 +453,7 @@ export default {
            }
            this.$store.dispatch('grab_todos_tasks', id).then(response => {
                this.selected = response;
+               this.add_new_task_item_to_field = '';
            })
         },
         loadData(){
@@ -450,6 +485,8 @@ export default {
             if(this.$refs.add_new_task.validate()) {
                this.$store.dispatch('add_new_task', [this.selected, this.create_option]).then(() => {
                     this.add_task = false;
+                    this.add_new_task_item_to_field = '';
+                    this.create_option = '';
                     this.loadData();
                })
            }
@@ -460,6 +497,8 @@ export default {
                 this.$store.dispatch('add_new_item', [removedText, this.create_option]).then(() => {
                     this.add_item = false;
                     this.loadItems(this.selected_item_index);
+                    this.add_new_task_item_to_field = '';
+                    this.create_option = '';
                 })
             }
         },
@@ -470,6 +509,7 @@ export default {
                 response.forEach( item => item.tasks = JSON.parse(item.tasks))
                 response.forEach( item => item.label = JSON.parse(item.label))
                 this.selected_item = response;
+                this.create_option = '';
             })
         },
         toggle_checkbox(index){
@@ -483,7 +523,23 @@ export default {
                 this.selected_item[0].label.push({name: this.add_new_task_item_to_field, color: this.label_selected});
                 this.add_new_label =  false;
                 this.add_new_task_item_to_field = '';
+                this.create_option = '';
             }
+        },
+        add_empty_task_field(){
+            if(this.$refs.new_veld.validate()) {
+                this.$store.dispatch('create_todos_table', this.add_new_task_item_to_field).then(() => {
+                    this.create_table_dialog = !this.create_table_dialog;
+                    this.add_new_task_item_to_field = '';
+                    this.create_option = '';
+                    this.loadData();
+                })
+            }
+        },
+        remove_field(index){
+            this.$store.dispatch('remove_label', index).then(() => {
+                this.loadData();
+            })
         },
         add_to_task_field(){
             if(this.$refs.new_item.validate()){
@@ -493,13 +549,11 @@ export default {
                 this.selected_item[0].tasks.push({name: this.add_new_task_item_to_field, active: true});
                 this.add_new_task = false;
                 this.add_new_task_item_to_field = '';
+                this.create_option = '';
             }
         },
         remove_checkbox(index){
             this.selected_item[0].tasks.splice(index,1);
-        },
-        create_table(){
-
         },
         remove_label(index){
             this.selected_item[0].label.splice(index,1);
@@ -510,6 +564,12 @@ export default {
                 this.loadItems(this.selected_item_index);
                 this.edit_task = false;
                 this.change_title = false;
+            })
+        },
+        removeOption(index){
+            this.$store.dispatch('remove_options', index).then(() => {
+                this.loadItems(this.selected_item_index);
+                this.edit_task = false;
             })
         }
     },

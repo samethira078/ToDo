@@ -45,7 +45,7 @@ export default new Vuex.Store({
       create_todos_table(_, data){
           return new Promise((resolve, reject) => {
               axios.post('user/create/list', {
-                  table_name: data.name,
+                  table_name: data,
               }).then(response => {
                   resolve(response.data)
               }).catch(() =>{
@@ -56,6 +56,18 @@ export default new Vuex.Store({
       grab_todos_list(){
           return new Promise((resolve, reject) => {
               axios.get('user/grab/list').
+              then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
+      remove_label(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('user/remove/list',{
+                  id: data,
+              }).
               then(response => {
                   resolve(response.data)
               }).catch(() =>{
@@ -135,6 +147,17 @@ export default new Vuex.Store({
               })
           })
       },
+      remove_options(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('user/remove/options', {
+                  id: data,
+              }).then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      }
   },
   modules: {
   }

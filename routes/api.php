@@ -21,9 +21,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user/grab/list', [Consumer::class, 'user_grab_list']);
     Route::post('/user/grab/tasks', [Consumer::class, 'user_grab_tasks']);
     Route::post('/user/update/options', [Consumer::class, 'user_update_options']);
+    Route::post('/user/remove/options', [Consumer::class, 'user_remove_options']);
     Route::post('/user/grab/single/item', [Consumer::class, 'user_grab_single_item']);
     Route::post('/user/add/task', [Consumer::class, 'user_add_task']);
     Route::post('/user/add/item', [Consumer::class, 'user_add_item']);
+    Route::post('/user/remove/list', [Consumer::class, 'user_remove_list']);
 });
 Route::post('/user/validate', [Consumer::class, 'user_Login']);
 Route::post('/user/register', [Consumer::class, 'user_register']);
