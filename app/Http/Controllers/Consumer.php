@@ -88,16 +88,6 @@ class Consumer extends Controller
     }
 
     public function user_add_task(Request $request){
-
-
-//        $tasks = Task::leftJoin('todos', 'todos.id', '=', 'tasks.table_id')->where([['table_id', '=', $request->id], ['user_id', '=', auth()->user()->id]])->select('tasks.id', 'todos.id as todo_id')->get();;
-//        $array = json_decode(json_encode($tasks), true);
-//        $last_task = 1;
-//        if($tasks){
-//            $array = json_decode(json_encode($tasks), true);
-//            $last_task = (end($array));
-//        }
-;
         $new = new Task;
         $new->table_id = $request->id;
         $new->task_name = strval($request->list);
@@ -109,12 +99,22 @@ class Consumer extends Controller
     public function user_add_item(Request $request){
         $new = new Option;
         $new->name = $request->list;
-        $new->status = 1;
-        $new->tasks = true;
-        $new->label = true;
+        $new->status = 'Actief';
+        $new->tasks = null;
+        $new->label = null;
         $new->task_id = $request->id;
         $new->save();
 
 
+    }
+    public function user_update_options(Request $request){
+        $data = $request->data[0];
+        return Option::where('id', '=', $data['id'])
+            ->update([
+                'name' => $data['name'],
+                'status' => $data['status'],
+                'tasks' => $data['tasks'],
+                'label' => $data['label']
+            ]);
     }
 }

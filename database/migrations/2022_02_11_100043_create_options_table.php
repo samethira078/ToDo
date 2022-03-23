@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('options', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('status');
+            $table->string('status');
             $table->json('tasks')->nullable();
             $table->json('label')->nullable();
             $table->bigInteger('task_id');

@@ -8,7 +8,7 @@
                     <h2 class="font-weight-black white--text">To-do-List</h2>
                  </v-app-bar-title>
                  <v-spacer></v-spacer>
-                 <v-btn class="mr-4" depressed>
+                 <v-btn @click="create_table" class="mr-4" depressed>
                      creëren
                  </v-btn>
                  <v-btn depressed>
@@ -80,22 +80,22 @@
                     </v-tab>
                     <!--                    ITEMS SELECTED ITEMS-->
                     <v-tab-item :change="selectedItem" class="ma-2" v-for="(list) in selected"  :key="list.id" :value="'tab-'+list.id">
-                        <v-card flat v-for="(item, key) in list.options" :key="key">
-                            <v-row id="properties" @click="run_Click(item.id)" class="ma-2 text--black">
-                                <v-col v-if="item.status && item.status !== 2" class="green lighten-4" cols="12">
-                                    <!--                                    name-->
-                                    {{item.name}}
-                                </v-col>
-                                <v-col v-if="!item.status && item.status !== 2" class="red lighten-4" cols="12">
-                                    <!--                                    name-->
-                                    {{item.name}}
-                                </v-col>
-                                <v-col v-if="item.status === 2" class="grey lighten-2" cols="12">
-                                    <!--                                    name-->
-                                    <h4 class="text-decoration-line-through font-weight-light">{{item.name}}</h4>
-                                </v-col>
-                            </v-row>
-                        </v-card>
+                        <v-data-table
+                            dense
+                            :headers="headers"
+                            :items="list.options"
+                            v-model="selected_rows"
+                            item-key="name"
+                            class="elevation-1"
+                        >
+                            <template v-slot:item="{item}">
+                                <tr @click="run_Click(item.id)">
+                                    <td>{{ item.id }}</td>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.status }}</td>
+                                </tr>
+                            </template>
+                        </v-data-table>
                         <v-spacer></v-spacer>
 
                         <v-btn text @click="add_item = !add_item" class="mt-2 float-end" color="primary">
@@ -196,15 +196,14 @@
                     <v-row>
                         <v-col cols="6">
                             <v-select
-                                v-model="status_option.status"
+                                v-model="selected_item[0].status"
                                 :items="status_option"
                                 label="Status"
                             ></v-select>
                             {{status_option.status}}
                         </v-col>
                         <v-col cols="6">
-                            <v-btn color="success" class="ml-1 d-block">Opslaan
-                            </v-btn>
+                            <v-btn @click="updateOption()" color="success" class="ml-1 d-block">Opslaan</v-btn>
                         </v-col>
                     </v-row>
                     <v-row>
@@ -236,6 +235,34 @@
                         </v-col>
                     </v-row>
                 </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog width="300" v-model="create_table_dialog">
+            <v-card>
+                <v-card-title>
+                    Nieuwe veld creeeren.
+                </v-card-title>
+                <v-card-text>
+                    <v-form
+                        ref="new_veld"
+                        lazy-validation
+                    >
+                        <v-text-field
+                            :rules="addOptionInput"
+                            v-model="add_new_task_item_to_field"
+                            label="Omschrijving"
+                            required
+                        ></v-text-field>
+                    </v-form>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn @click="add_to_task_field()"
+                           color="primary"
+                           text
+                    >Toevoegen
+                    </v-btn>
+                </v-card-actions>
             </v-card>
         </v-dialog>
 
@@ -350,11 +377,19 @@ export default {
             selectedItem: '',
             todos: [],
             search: '',
+            selected_item_index: null,
             selected_item: [],
             active_tab: 1,
             change_title: false,
             label_selected: '',
+            selected_rows: [],
             selected: [],
+            headers: [
+                { text: 'ID', value: 'id' },
+                { text: 'Name', value: 'name' },
+                { text: 'Status', value: 'status' },
+            ],
+            create_table_dialog: false,
             status_option: ['Actief', 'Gesloten', 'Gearchiveerd'],
             edit_task: false,
             add_new_task: false,
@@ -377,6 +412,7 @@ export default {
     },
     methods: {
         loadItems(id){
+            this.selected_item_index = id;
            if(this.selected_dialog === false){
                this.selected_dialog = !this.selected_dialog;
            }
@@ -385,9 +421,9 @@ export default {
            })
         },
         loadData(){
+
             //New request
             this.$store.dispatch('grab_todos_list').then(response => {
-                console.log(response);
                 let data = [];
                 //Loop through returned data
                 response.map(function (item){
@@ -417,17 +453,21 @@ export default {
                })
            }
         },
-        add_new_item(index){
+        add_new_item(){
+            let removedText = this.active_tab.replace(/\D+/g, '');
             if(this.$refs.add_new_item[0].validate()) {
-                this.$store.dispatch('add_new_item', [index, this.create_option]).then(() => {
+                this.$store.dispatch('add_new_item', [removedText, this.create_option]).then(() => {
                     this.add_item = false;
-                    this.loadItems(index);
+                    this.loadItems(this.selected_item_index);
                 })
             }
         },
         run_Click(index){
+            console.log(index);
             this.edit_task = true;
             this.$store.dispatch('grab_single_item', index).then(response => {
+                response.forEach( item => item.tasks = JSON.parse(item.tasks))
+                response.forEach( item => item.label = JSON.parse(item.label))
                 this.selected_item = response;
             })
         },
@@ -443,7 +483,6 @@ export default {
                 this.add_new_label =  false;
                 this.add_new_task_item_to_field = '';
             }
-            console.log(this.selected_item[0].label);
         },
         add_to_task_field(){
             if(this.$refs.new_item.validate()){
@@ -453,15 +492,24 @@ export default {
                 this.selected_item[0].tasks.push({name: this.add_new_task_item_to_field, active: true});
                 this.add_new_task = false;
                 this.add_new_task_item_to_field = '';
-                console.log(this.selected_item[0].tasks)
             }
         },
         remove_checkbox(index){
             this.selected_item[0].tasks.splice(index,1);
         },
+        create_table(){
+
+        },
         remove_label(index){
             this.selected_item[0].label.splice(index,1);
 
+        },
+        updateOption(){
+            this.$store.dispatch('update_options', this.selected_item).then(() => {
+                this.loadItems(this.selected_item_index);
+                this.edit_task = false;
+                this.change_title = false;
+            })
         }
     },
     mounted() {

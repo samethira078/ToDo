@@ -63,6 +63,17 @@ export default new Vuex.Store({
               })
           })
       },
+      create_todos_field(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('user/create/list', {
+                  table_name: data,
+              }).then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
       grab_todos_tasks(_, data){
           return new Promise((resolve, reject) => {
               axios.post('user/grab/tasks', {
@@ -105,6 +116,18 @@ export default new Vuex.Store({
           return new Promise((resolve, reject) => {
               axios.post('user/grab/single/item', {
                   id: data,
+              }).then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
+
+      update_options(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('user/update/options', {
+                  data: data,
               }).then(response => {
                   resolve(response.data)
               }).catch(() =>{
