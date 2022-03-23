@@ -80,6 +80,7 @@
                     </v-tab>
                     <!--                    ITEMS SELECTED ITEMS-->
                     <v-tab-item :change="selectedItem" class="ma-2" v-for="(list) in selected"  :key="list.id" :value="'tab-'+list.id">
+                        <h1 class="black--text pa-3 font-weight-medium">Klik op een regel om te bewerken</h1>
                         <v-data-table
                             dense
                             :headers="headers"
