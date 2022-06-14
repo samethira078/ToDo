@@ -8,6 +8,7 @@
                     <h2 class="font-weight-black white--text">To-do-List</h2>
                  </v-app-bar-title>
                  <v-spacer></v-spacer>
+<!--                 Create Table-->
                  <v-btn @click="create_table_dialog = !create_table_dialog" class="mr-4" depressed>
                      creëren
                  </v-btn>
@@ -17,6 +18,7 @@
              </v-app-bar>
          </v-col>
        </v-row>
+<!--        List fields of user-->
        <v-row>
             <v-col v-for="list in todos" :key="list.id" sm="12" lg="4" md="6">
                 <v-card>
@@ -66,7 +68,10 @@
                 </v-card>
             </v-col>
        </v-row>
-<!--        DIALOG SELECTED ITEMS-->
+
+
+
+<!--        Dialog rename tab-->
         <v-dialog
             v-model="rename_dialog"
             max-width="400"
@@ -94,6 +99,8 @@
 
 
 
+
+<!--        Dialog selected field-->
         <v-dialog dark v-model="selected_dialog" width="1000">
             <v-sheet elevation="6">
                 <v-tabs v-model="active_tab" background-color="teal darken-5" dark
@@ -173,6 +180,11 @@
                 </v-tabs>
             </v-sheet>
         </v-dialog>
+
+
+
+
+<!--        Dialog add task-->
         <v-dialog width="400" v-model="add_task">
             <v-card>
                 <v-form ref="add_new_task">
@@ -206,39 +218,45 @@
             </v-card>
         </v-dialog>
 
-        <v-dialog width="400" v-model="add_task">
-            <v-card>
-                <v-form ref="add_new_task">
-                    <v-card-title>
-                        Nieuwe taak toevoegen
-                    </v-card-title>
-                    <v-card-text>
-                        <v-text-field
-                            v-model="create_option"
-                            :rules="addOptionInput"
-                            label="Name"
-                            required
-                        ></v-text-field>
-                    </v-card-text>
-                    <v-card-actions>
-                        <v-btn
-                            color="red"
-                            text
-                            @click="add_item = false"
-                        >
-                            Sluiten
-                        </v-btn>
-                        <v-spacer></v-spacer>
-                        <v-btn v-on:keyup.enter="add_row()" @click="add_row()"
-                               color="primary"
-                               text
-                        >Toevoegen
-                        </v-btn>
-                    </v-card-actions>
-                </v-form>
-            </v-card>
-        </v-dialog>
 
+
+
+
+<!--        <v-dialog width="400" v-model="add_task">-->
+<!--            <v-card>-->
+<!--                <v-form ref="add_new_task">-->
+<!--                    <v-card-title>-->
+<!--                        Nieuwe taak toevoegen-->
+<!--                    </v-card-title>-->
+<!--                    <v-card-text>-->
+<!--                        <v-text-field-->
+<!--                            v-model="create_option"-->
+<!--                            :rules="addOptionInput"-->
+<!--                            label="Name"-->
+<!--                            required-->
+<!--                        ></v-text-field>-->
+<!--                    </v-card-text>-->
+<!--                    <v-card-actions>-->
+<!--                        <v-btn-->
+<!--                            color="red"-->
+<!--                            text-->
+<!--                            @click="add_item = false"-->
+<!--                        >-->
+<!--                            Sluiten-->
+<!--                        </v-btn>-->
+<!--                        <v-spacer></v-spacer>-->
+<!--                        <v-btn v-on:keyup.enter="add_row()" @click="add_row()"-->
+<!--                               color="primary"-->
+<!--                               text-->
+<!--                        >Toevoegen-->
+<!--                        </v-btn>-->
+<!--                    </v-card-actions>-->
+<!--                </v-form>-->
+<!--            </v-card>-->
+<!--        </v-dialog>-->
+
+
+<!--        Dialog edit overview task-->
         <v-dialog width="450" v-model="edit_task">
             <v-card v-if="selected_item[0]">
                 <v-card-title v-if="!change_title">
@@ -276,7 +294,7 @@
                     </v-btn>
                 </span>
                 <span v-if="selected_item[0].time && !change_time">
-                    <p class="ml-6 d-inline-block">Tijd: {{selected_item[0].time}}</p>
+                    <p class="ml-6 d-inline-block">Tijd: {{selected_item[0].time}} minuten</p>
                 <v-btn @click="change_time = true" text class="ml-1">
                     <v-icon>mdi-pencil</v-icon>
                 </v-btn>
@@ -345,6 +363,9 @@
             </v-card>
         </v-dialog>
 
+
+
+<!--        Dialog add time-->
         <v-dialog
             v-model="add_new_time"
             max-width="400"
@@ -371,6 +392,8 @@
             </v-card>
         </v-dialog>
 
+
+<!--        Dialog create table-->
         <v-dialog width="300" v-model="create_table_dialog">
             <v-card>
                 <v-card-title>
@@ -399,6 +422,9 @@
             </v-card>
         </v-dialog>
 
+
+
+<!--        Dialog add new task-->
         <v-dialog width="300" v-model="add_new_task">
             <v-card>
                 <v-card-title>
@@ -426,6 +452,10 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
+
+
+
+<!--        Dialog add new label-->
         <v-dialog width="300" v-model="add_new_label">
             <v-card>
                 <v-card-title>
@@ -554,6 +584,7 @@ export default {
         }
     },
     methods: {
+        //Load all fields from API request
         loadItems(id){
             this.selected_item_index = id;
            if(this.selected_dialog === false){
@@ -585,6 +616,7 @@ export default {
                 //  Error
             })
         },
+        //Add new task to field
         add_row(index, action){
             if(action){
                 this.selected = index;
@@ -599,9 +631,13 @@ export default {
                })
            }
         },
+        //Add new item to list
         add_new_item(){
+            //Tab to ID only
             let removedText = this.active_tab.replace(/\D+/g, '');
+            //Validate if tab is correct
             if(this.$refs.add_new_item[0].validate()) {
+                //Add item
                 this.$store.dispatch('add_new_item', [removedText, this.create_option]).then(() => {
                     this.add_item = false;
                     this.loadItems(this.selected_item_index);
@@ -610,28 +646,33 @@ export default {
                 })
             }
         },
+        //Grab single task option
         run_Click(index){
             this.edit_task = true;
             this.$store.dispatch('grab_single_item', index).then(response => {
                 response.forEach( item => item.tasks = JSON.parse(item.tasks))
                 response.forEach( item => item.label = JSON.parse(item.label))
+                //Save JSON in variable
                 this.selected_item = response;
                 this.create_option = '';
             })
         },
+        //Change title by ID
         changeCardTitle(index){
                 this.changeTab = index;
                 this.rename_dialog = !this.rename_dialog;
         },
+        //Remove tab by ID
         removeTab(index){
             //Remove tab
             this.$store.dispatch('user_remove_tab', index).then(() => {
                 this.loadItems(this.selected_item_index);
             })
         },
-        //Change card title
+        //Submit changing card title
         changeCardTitleComplete(){
             this.$store.dispatch('change_card_title_card', [this.changeTab, this.rename_name]).then(() => {
+                //Reload items after changing tab
                 this.loadItems(this.selected_item_index);
                 this.rename_dialog = false;
             })
@@ -639,61 +680,77 @@ export default {
         toggle_checkbox(index){
             this.selected_item[0].tasks[index].active = !this.selected_item[0].tasks[index].active;
         },
+        //Add time to a field
         add_new_time_to_field(){
             this.selected_item[0].time = this.add_time;
             this.add_new_time = false;
         },
+        //Add label to field
         add_new_label_to_field(){
             if(this.$refs.new_label.validate()) {
+                //Check if label field exists
                 if(!this.selected_item[0].label){
                     this.selected_item[0].label = [];
                 }
+                //Add to label field
                 this.selected_item[0].label.push({name: this.add_new_task_item_to_field, color: this.label_selected});
                 this.add_new_label =  false;
                 this.add_new_task_item_to_field = '';
                 this.create_option = '';
             }
         },
+        //Add task field
         add_empty_task_field(){
             if(this.$refs.new_veld.validate()) {
                 this.$store.dispatch('create_todos_table', this.add_new_task_item_to_field).then(() => {
                     this.create_table_dialog = !this.create_table_dialog;
                     this.add_new_task_item_to_field = '';
                     this.create_option = '';
+                    //Reload data
                     this.loadData();
                 })
             }
         },
+        //Remove field
         remove_field(index){
             this.$store.dispatch('remove_label', index).then(() => {
+                //Reload data
                 this.loadData();
             })
         },
+        //Task to field
         add_to_task_field(){
             if(this.$refs.new_item.validate()){
+                //Check if exists
                 if(!this.selected_item[0].tasks){
                     this.selected_item[0].tasks = [];
                 }
+                //Push to JSON object
                 this.selected_item[0].tasks.push({name: this.add_new_task_item_to_field, active: true});
                 this.add_new_task = false;
                 this.add_new_task_item_to_field = '';
                 this.create_option = '';
             }
         },
+        //Remove selected checkbox
         remove_checkbox(index){
             this.selected_item[0].tasks.splice(index,1);
         },
+        //Remove selected label
         remove_label(index){
             this.selected_item[0].label.splice(index,1);
 
         },
+        //Update changes of option
         updateOption(){
             this.$store.dispatch('update_options', this.selected_item).then(() => {
+                //Reload items
                 this.loadItems(this.selected_item_index);
                 this.edit_task = false;
                 this.change_title = false;
             })
         },
+        //Remove an option from DB
         removeOption(index){
             this.$store.dispatch('remove_options', index).then(() => {
                 this.loadItems(this.selected_item_index);

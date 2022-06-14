@@ -72,13 +72,13 @@ class Consumer extends Controller
         Task::where('id',$request['table_name'])->update(['task_name'=>$request['new_title']]);
 
     }
-
+//      Remove tab
     public function user_remove_tab(Request $request){
         $request['id'] = preg_replace('/\D/', '', $request['id']);
         Task::destroy($request['id']);
         DB::table('options')->where('task_id',$request['id'])->delete();
     }
-
+// Create list
     public function user_create_list(Request $request){
         $field = $request->validate([
             'table_name' => 'required|string|unique:todos,table_name|unique:todos,user_id',
@@ -90,18 +90,20 @@ class Consumer extends Controller
             'table_creation' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
     }
-
+// Grab list
     public function user_grab_list(){
         return Todo::where([['user_id', '=', auth()->user()->id]])->leftJoin('tasks', 'tasks.table_id', '=', 'todos.id')->leftJoin('users', 'users.id', '=', 'todos.user_id')->get(['todos.table_name','tasks.table_id', 'tasks.task_name', 'todos.table_creation', 'users.name as username', 'tasks.id as id','todos.id as todo_id', 'users.id as username_id']);
     }
+//    Grab task
     public function user_grab_tasks(Request $request){
         $task = Task::where('table_id', $request->id);
         return $task->with('options')->get();
     }
+//    Grab single item
     public function user_grab_single_item(Request $request){
         return Option::where([['id', '=', $request->id]])->get();
     }
-
+//      Add task
     public function user_add_task(Request $request){
         $new = new Task;
         $new->table_id = $request->id;
@@ -110,7 +112,7 @@ class Consumer extends Controller
         $new->save();
 
     }
-
+//      Add item
     public function user_add_item(Request $request){
         $new = new Option;
         $new->name = $request->list;
@@ -122,6 +124,8 @@ class Consumer extends Controller
 
 
     }
+
+//      Update options
     public function user_update_options(Request $request){
         $data = $request->data[0];
         return Option::where('id', '=', $data['id'])
@@ -134,9 +138,11 @@ class Consumer extends Controller
                 'description' => $data['description']
             ]);
     }
+//      Remove options
     public function user_remove_options(Request $request){
         Option::where('id', $request->id)->delete();
     }
+//      Remove list
     public function user_remove_list(Request $request){
         Todo::where('id', $request->id)->delete();
     }
