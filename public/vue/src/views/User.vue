@@ -242,10 +242,10 @@
         <v-dialog width="450" v-model="edit_task">
             <v-card v-if="selected_item[0]">
                 <v-card-title v-if="!change_title">
-                    {{selected_item[0].name}}
-                    <v-btn @click="change_title = !change_title" text class="ml-1">
+                    <v-btn style="margin-left: -19px;" @click="change_title = !change_title" text>
                         <v-icon>mdi-pencil</v-icon>
                     </v-btn>
+                    {{selected_item[0].name}}
                 </v-card-title>
                 <v-card-title v-else>
                     <v-text-field
@@ -258,6 +258,23 @@
                         <v-icon>mdi-check-bold</v-icon>
                     </v-btn>
                 </v-card-title>
+                <v-btn v-if="!change_description" @click="change_description = true" text class="ml-1 d-inline-block">
+                    <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <span v-if="!change_description" class="d-inline-flex">
+                    <p style="width: 375px; font-size: 12px;">{{selected_item[0].description}}</p>
+                </span>
+                <span style="width: 80%" class="d-block ml-6" v-if="change_description">
+                        <v-text-field
+                            class="d-inline-block"
+                            v-model="selected_item[0].description"
+                            label="Description"
+                            required
+                        ></v-text-field>
+                    <v-btn @click="change_description = false" text class="ml-1 d-inline-block">
+                        <v-icon>mdi-check-bold</v-icon>
+                    </v-btn>
+                </span>
                 <span v-if="selected_item[0].time && !change_time">
                     <p class="ml-6 d-inline-block">Tijd: {{selected_item[0].time}}</p>
                 <v-btn @click="change_time = true" text class="ml-1">
@@ -499,6 +516,7 @@ export default {
             active_tab: 1,
             change_title: false,
             change_time: false,
+            change_description: false,
             label_selected: '',
             selected_rows: [],
             add_new_time: false,
@@ -512,7 +530,7 @@ export default {
             ],
 
             create_table_dialog: false,
-            status_option: ['Actief', 'Gesloten', 'Gearchiveerd'],
+            status_option: ['Actief', 'Inactief'],
             edit_task: false,
             rename_dialog: false,
             add_new_task: false,

@@ -130,7 +130,8 @@ class Consumer extends Controller
                 'status' => $data['status'],
                 'tasks' => $data['tasks'],
                 'label' => $data['label'],
-                'time' => $data['time']
+                'time' => $data['time'],
+                'description' => $data['description']
             ]);
     }
     public function user_remove_options(Request $request){
