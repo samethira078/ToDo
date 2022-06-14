@@ -8,6 +8,7 @@ use App\Models\Todo;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class Consumer extends Controller
@@ -47,7 +48,7 @@ class Consumer extends Controller
             'password' => 'required|string'
         ]);
 
-        //Create user table
+        //Create user
         $user = User::create([
             'name' => $field['name'], 'role' => 2,
             'password' => bcrypt($field['password'])
@@ -62,6 +63,20 @@ class Consumer extends Controller
             'token' => $token
         ];
         return response($response, 201);
+    }
+    public function change_card_title_card(Request $request){
+//        Change table name
+        $request['table_name'] = preg_replace('/\D/', '', $request['table_name']);
+        echo $request['table_name'];
+
+        Task::where('id',$request['table_name'])->update(['task_name'=>$request['new_title']]);
+
+    }
+
+    public function user_remove_tab(Request $request){
+        $request['id'] = preg_replace('/\D/', '', $request['id']);
+        Task::destroy($request['id']);
+        DB::table('options')->where('task_id',$request['id'])->delete();
     }
 
     public function user_create_list(Request $request){
@@ -114,7 +129,8 @@ class Consumer extends Controller
                 'name' => $data['name'],
                 'status' => $data['status'],
                 'tasks' => $data['tasks'],
-                'label' => $data['label']
+                'label' => $data['label'],
+                'time' => $data['time']
             ]);
     }
     public function user_remove_options(Request $request){

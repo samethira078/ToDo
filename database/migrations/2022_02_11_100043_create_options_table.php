@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('status');
+            $table->string('time')->nullable();
             $table->json('tasks')->nullable();
             $table->json('label')->nullable();
             $table->bigInteger('task_id');

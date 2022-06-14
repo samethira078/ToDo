@@ -53,6 +53,30 @@ export default new Vuex.Store({
               })
           })
       },
+      //Change card title
+      change_card_title_card(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('/user/rename/title', {
+                  table_name: data[0],
+                  new_title: data[1]
+              }).then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
+      user_remove_tab(_, data){
+          return new Promise((resolve, reject) => {
+              axios.post('/user/remove/tab', {
+                  id: data,
+              }).then(response => {
+                  resolve(response.data)
+              }).catch(() =>{
+                  reject(reject)
+              })
+          })
+      },
       grab_todos_list(){
           return new Promise((resolve, reject) => {
               axios.get('user/grab/list').

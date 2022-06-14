@@ -16,6 +16,7 @@ class Option extends Model
         'status',
         'tasks',
         'label',
-        'task_id'
+        'task_id',
+        'time'
     ];
 }

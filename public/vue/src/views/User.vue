@@ -67,6 +67,33 @@
             </v-col>
        </v-row>
 <!--        DIALOG SELECTED ITEMS-->
+        <v-dialog
+            v-model="rename_dialog"
+            max-width="400"
+        >
+            <v-card>
+                <v-card-title>
+                    Wijzig naam van tab
+                </v-card-title>
+                <v-card-text>
+                    <v-form>
+                        <v-text-field
+                            v-model="rename_name"
+                            label="Name"
+                            required
+                        ></v-text-field>
+                    </v-form>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn @click="changeCardTitleComplete()" class="primary">
+                        Create playlist
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+
+
         <v-dialog dark v-model="selected_dialog" width="1000">
             <v-sheet elevation="6">
                 <v-tabs v-model="active_tab" background-color="teal darken-5" dark
@@ -94,16 +121,22 @@
                                     <td>{{ item.id }}</td>
                                     <td>{{ item.name }}</td>
                                     <td>{{ item.status }}</td>
+                                    <td>{{ item.time }}</td>
                                 </tr>
                             </template>
 
                         </v-data-table>
                         <v-spacer></v-spacer>
-
                         <v-btn text @click="add_item = !add_item" class="mt-2 float-end" color="primary">
                             Nieuw kaart toevoegen {{active_tab}}
                         </v-btn>
-
+                        <!--                        Change card title-->
+                        <v-btn text @click="changeCardTitle(active_tab)" class="mt-2 float-end" color="primary">
+                            Naam van deze tab wijzigen
+                        </v-btn>
+                        <v-btn text @click="removeTab(active_tab)" class="mt-2 float-end" color="primary">
+                            Deze tab verwijderen
+                        </v-btn>
                         <v-dialog width="400" v-model="add_item">
                             <v-card>
                                 <v-form ref="add_new_item">
@@ -225,7 +258,29 @@
                         <v-icon>mdi-check-bold</v-icon>
                     </v-btn>
                 </v-card-title>
+                <span v-if="selected_item[0].time && !change_time">
+                    <p class="ml-6 d-inline-block">Tijd: {{selected_item[0].time}}</p>
+                <v-btn @click="change_time = true" text class="ml-1">
+                    <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <v-btn @click="selected_item[0].time = ''" text class="ml-1">
+                    <v-icon>mdi-delete</v-icon>
+                </v-btn>
+                </span>
                 <v-card-text>
+                    <span class="d-inline-block" v-if="change_time">
+                    <v-form v-model="valid_time">
+                        <v-text-field
+                            v-model="selected_item[0].time"
+                            label="Time"
+                            required
+                            :rules="[(v) => /^(?![0])[0-9]+$/.test(v) || 'Alleen cijfers {telt als minuten, hoger dan 0}']"
+                        ></v-text-field>
+                    </v-form>
+                </span>
+                    <v-btn v-if="change_time" :disabled="!valid_time" @click="change_time = false" text class="d-inline-block">
+                        <v-icon>mdi-check-bold</v-icon>
+                    </v-btn>
                     <v-row>
                         <v-col cols="6">
                             <v-select
@@ -243,7 +298,8 @@
                     <v-row>
                         <v-btn color="primary" @click="add_new_label = !add_new_label" text class="ml-1 d-block">Label toevoegen<v-icon>mdi-plus</v-icon>
                         </v-btn>
-                        <v-col cols="12">
+                        <v-btn v-if="!this.selected_item[0].time" color="primary" @click="add_new_time = !add_new_time" text class="ml-1 d-block">Tijd toevoegen<v-icon>mdi-plus</v-icon></v-btn>
+                            <v-col cols="12">
                             <div>
                                 <v-chip v-for="(label, index) in selected_item[0].label" :key="index"
                                         @click="remove_label(index)"
@@ -269,6 +325,32 @@
                         </v-col>
                     </v-row>
                 </v-card-text>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog
+            v-model="add_new_time"
+            max-width="400"
+        >
+            <v-card>
+                <v-card-title>
+                    Tijd toevoegen
+                </v-card-title>
+                <v-card-text>
+                    <v-form v-model="valid_time">
+                        <v-text-field
+                            v-model="add_time"
+                            label="Time"
+                            required
+                            :rules="[(v) => /^(?![0])[0-9]+$/.test(v) || 'Alleen cijfers {telt als minuten, hoger dan 0}']"
+                        ></v-text-field>
+                    </v-form>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn :disabled="!valid_time" @click="add_new_time_to_field()" class="primary">
+                        Add time
+                    </v-btn>
+                </v-card-actions>
             </v-card>
         </v-dialog>
 
@@ -411,28 +493,36 @@ export default {
             selectedItem: '',
             todos: [],
             search: '',
+            valid_time: false,
             selected_item_index: null,
             selected_item: [],
             active_tab: 1,
             change_title: false,
+            change_time: false,
             label_selected: '',
             selected_rows: [],
+            add_new_time: false,
+            add_time: '',
             selected: [],
             headers: [
                 { text: 'ID', value: 'id' },
                 { text: 'Name', value: 'name' },
                 { text: 'Status', value: 'status' },
+                { text: 'Time', value: 'time'}
             ],
 
             create_table_dialog: false,
             status_option: ['Actief', 'Gesloten', 'Gearchiveerd'],
             edit_task: false,
+            rename_dialog: false,
             add_new_task: false,
             add_new_label: false,
+            rename_name: '',
             label_option: ['primary', 'secondary', 'error', 'success', 'info'],
             selected_dialog: false,
             add_new_task_item_to_field: '',
             add_task: false,
+            changeTab: null,
             add_item: false,
             create_option: '',
             labelInput: [
@@ -503,7 +593,6 @@ export default {
             }
         },
         run_Click(index){
-            console.log(index);
             this.edit_task = true;
             this.$store.dispatch('grab_single_item', index).then(response => {
                 response.forEach( item => item.tasks = JSON.parse(item.tasks))
@@ -512,8 +601,29 @@ export default {
                 this.create_option = '';
             })
         },
+        changeCardTitle(index){
+                this.changeTab = index;
+                this.rename_dialog = !this.rename_dialog;
+        },
+        removeTab(index){
+            //Remove tab
+            this.$store.dispatch('user_remove_tab', index).then(() => {
+                this.loadItems(this.selected_item_index);
+            })
+        },
+        //Change card title
+        changeCardTitleComplete(){
+            this.$store.dispatch('change_card_title_card', [this.changeTab, this.rename_name]).then(() => {
+                this.loadItems(this.selected_item_index);
+                this.rename_dialog = false;
+            })
+        },
         toggle_checkbox(index){
             this.selected_item[0].tasks[index].active = !this.selected_item[0].tasks[index].active;
+        },
+        add_new_time_to_field(){
+            this.selected_item[0].time = this.add_time;
+            this.add_new_time = false;
         },
         add_new_label_to_field(){
             if(this.$refs.new_label.validate()) {
@@ -576,13 +686,6 @@ export default {
     mounted() {
         this.loadData();
     },
-    watch: {
-        selected_item: {
-            handler: function (val, oldVal) {
-                console.log(oldVal, val);
-            },
-}
-    }
 }
 </script>
 
